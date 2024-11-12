@@ -1,43 +1,64 @@
+import { Suspense } from 'react'
 import Header from '@/components/header'
 import NewsCard from '@/components/news-card'
+import { NewsCardSkeleton } from '@/components/news-skeleton'
 import { fetchNews } from '@/lib/news-service'
-import { NewsFilters } from '@/lib/types';
-import { processArticles } from '@/lib/article-utils';
+import { Category, NewsFilters } from '@/lib/types'
+import { processArticles } from '@/lib/article-utils'
+import InfiniteScroll from '@/components/infinite-scroll'
 
-export default async function Home({ searchParams }: { searchParams: NewsFilters }) {
+async function NewsContent({ searchParams }: { searchParams: NewsFilters }) {
   const response = await fetchNews(searchParams);
-
-  // Add inferred categories to articles
-  const articlesWithCategories = processArticles(response.articles);
-
+  const articlesWithCategories = processArticles(response.articles, searchParams.topic as Category);
   const [headlineArticle, ...restArticles] = articlesWithCategories;
 
+  const contentKey = JSON.stringify(searchParams);
+
+  return (
+    <div key={contentKey} className="animate-fade">
+      {/* Headline Section */}
+      {headlineArticle && (
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-4">Top Story</h2>
+          <NewsCard {...headlineArticle} isHeadline />
+        </section>
+      )}
+
+      {/* Rest of the News */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Latest News</h2>
+        <InfiniteScroll
+          searchParams={searchParams}
+          initialItems={restArticles}
+        />
+      </section>
+    </div>
+  );
+}
+
+export default function Home({ searchParams }: { searchParams: NewsFilters }) {
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <main className="container mx-auto px-4 py-8">
-
-        {/* Headline Section */}
-        {headlineArticle && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-4">Top Story</h2>
-            <NewsCard {...headlineArticle} isHeadline />
-          </section>
-        )}
-
-        {/* Rest of the News */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Latest News</h2>
-          <div className="grid grid-cols-4 gap-6">
-            {restArticles.map((article) => (
-              <NewsCard 
-                key={article.url} 
-                {...article} 
-                variant='vertical'
-              />
-            ))}
-          </div>
-        </section>
+        <Suspense fallback={
+          <>
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-4">Top Story</h2>
+              <NewsCardSkeleton isHeadline />
+            </section>
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">Latest News</h2>
+              <div className="grid grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <NewsCardSkeleton key={i} variant="vertical" />
+                ))}
+              </div>
+            </section>
+          </>
+        }>
+          <NewsContent searchParams={searchParams} />
+        </Suspense>
       </main>
     </div>
   )

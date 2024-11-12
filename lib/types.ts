@@ -26,7 +26,7 @@ export interface NewsApiResponse {
 }
 
 export interface NewsFilters {
-	q?: string;
+	search?: string;
 	state?: string;
 	topic?: string;
 	page?: number;

@@ -24,7 +24,10 @@ export default function Header() {
 
     // Update params with new values
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
+      if (key === 'state' && value === 'all') {
+        params.delete(key);
+      }
+      else if (value) {
         params.set(key, value);
       } else {
         params.delete(key);
@@ -32,7 +35,9 @@ export default function Header() {
     });
 
     startTransition(() => {
-      router.push(`?${params.toString()}`);
+      setTimeout(() => {
+        router.push(`?${params.toString()}`);
+      }, 100);
     });
   };
 

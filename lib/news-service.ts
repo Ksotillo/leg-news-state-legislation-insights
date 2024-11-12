@@ -6,7 +6,7 @@ export async function fetchNews(filters: NewsFilters): Promise<NewsApiResponse> 
 	try {
 		const params = new URLSearchParams();
 
-		if (filters.q) params.append('q', filters.q);
+		if (filters.search) params.append('search', filters.search);
 		if (filters.state) params.append('state', filters.state);
 		if (filters.topic) params.append('topic', filters.topic);
 		if (filters.page) params.append('page', filters.page.toString());

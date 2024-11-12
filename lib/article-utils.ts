@@ -1,4 +1,4 @@
-import { NewsArticle, NewsArticleWithCategoryAndReadTime } from './types';
+import { Category, NewsArticle, NewsArticleWithCategoryAndReadTime } from './types';
 import { inferCategoryFromArticle } from './category-inference';
 
 
@@ -12,7 +12,7 @@ const calculateReadTime = (content: string) => {
 	return Math.ceil(words + (content.match(/\[\+(\d+)\]/) ? parseInt(content.match(/\[\+(\d+)\]/)?.[1] || '0') / CHARS_PER_WORD : 0) / WORDS_PER_MINUTE);
 }
 
-export function processArticles(articles: NewsArticle[]): NewsArticleWithCategoryAndReadTime[] {
+export function processArticles(articles: NewsArticle[], category: Category): NewsArticleWithCategoryAndReadTime[] {
 	return articles
 		// First filter out invalid articles
 		.filter(article => {
@@ -25,7 +25,7 @@ export function processArticles(articles: NewsArticle[]): NewsArticleWithCategor
 		// Then add categories to remaining articles
 		.map(article => ({
 			...article,
-			category: inferCategoryFromArticle(article),
+			category: category || inferCategoryFromArticle(article),
 			readTime: calculateReadTime(article.content),
 		}));
 }

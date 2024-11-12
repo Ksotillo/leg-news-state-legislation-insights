@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Category } from '@/lib/types';
 import { categoryKeywords } from '@/lib/category-inference';
 
@@ -15,9 +15,14 @@ interface CategoryTabsProps {
 export default function CategoryTabs({ selectedCategory, onCategoryChange, disabled }: CategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState(selectedCategory)
 
+  useEffect(() => {
+    setActiveCategory(selectedCategory)
+  }, [selectedCategory])
+
   const handleCategoryChange = (category: string) => {
-    setActiveCategory(category)
-    onCategoryChange(category)
+    const newCategory = category === activeCategory ? '' : category
+    setActiveCategory(newCategory)
+    onCategoryChange(newCategory)
   }
 
   return (
@@ -26,9 +31,10 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange, disab
         <button
           key={category}
           className={`px-4 py-1 rounded-full text-sm whitespace-nowrap capitalize
+            transition-colors duration-200 ease-in-out
             ${activeCategory === category 
-              ? 'bg-red-500 text-white' 
-              : 'border border-gray-200'
+              ? 'bg-fireOpal text-white hover:bg-red-600' 
+              : 'border border-gray-200 hover:bg-gray-100'
             }`}
           onClick={() => handleCategoryChange(category)}
           disabled={disabled}

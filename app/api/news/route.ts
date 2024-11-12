@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 	if (topic) queryParts.push(topic);
 	if (search) queryParts.push(search);
 
-    const query = queryParts.length > 0 ? `(${keywords}) AND (${queryParts.join(" AND ")})` : keywords;
+    const query = queryParts.length > 0 ? `(${keywords})+AND+(${queryParts.join(" AND ")})` : keywords;
 
 	const params = new URLSearchParams({
 		pageSize,
