@@ -17,15 +17,19 @@ export default function SearchBar({ value, onChange, disabled }: SearchBarProps)
 
   // Update parent when debounced value changes
   useEffect(() => {
-    if (debouncedValue !== value) {
-      const search = debouncedValue.trim();
-      onChange(search);
+    // Only trigger onChange if the debounced value is different from the current value
+    // and is not an empty string (to prevent unnecessary URL updates)
+    const trimmedValue = debouncedValue.trim();
+    if (trimmedValue !== value) {
+      onChange(trimmedValue);
     }
-  }, [debouncedValue, onChange, value])
+  }, [debouncedValue])
 
   // Update local value when parent value changes
   useEffect(() => {
-    setLocalValue(value)
+    if (value !== localValue) {
+      setLocalValue(value)
+    }
   }, [value])
 
   return (

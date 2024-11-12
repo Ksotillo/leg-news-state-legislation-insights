@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NEWS_API_KEY, NEWS_API_BASE_URL } from '@/lib/config';
 import { NewsApiResponse } from '@/lib/types';
+import { memoryCache } from '@/lib/memory-cache';
 
 // Legislative keywords:
 const keywords = ['Law', 'Legislation', 'Congress', 'Senate', 'House'].join(' OR ');
+
+// Enable Next.js Route Handler caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 300; // 5 minutes
 
 export async function GET(request: NextRequest) {
 	const searchParams = request.nextUrl.searchParams;
@@ -12,6 +17,18 @@ export async function GET(request: NextRequest) {
 	const search = searchParams.get('search');
 	const page = searchParams.get('page') || '1';
 	const pageSize = searchParams.get('pageSize') || '10';
+
+
+	// Create a cache key from the search params
+	const cacheKey = `news:${searchParams.toString()}`;
+
+	// Try to get from memory cache first
+	const cachedData = memoryCache.get(cacheKey);
+	if (cachedData) {
+		return NextResponse.json(cachedData, {
+			headers: { 'X-Cache': 'HIT' },
+		});
+	}
 
 	// Build query string
 	const queryParts = [];
@@ -27,6 +44,7 @@ export async function GET(request: NextRequest) {
 		q: query,
 	});
 
+
 	try {
 		const response = await fetch(
 			`${NEWS_API_BASE_URL}/everything?${params.toString()}`,
@@ -36,13 +54,20 @@ export async function GET(request: NextRequest) {
 				},
 			}
 		);
-		console.log("Response status:", response.status, response.statusText, `${NEWS_API_BASE_URL}/everything?${params.toString()}`);
+
 		if (!response.ok) {
 			throw new Error('News API request failed');
 		}
 
 		const data: NewsApiResponse = await response.json();
-		return NextResponse.json(data);
+
+		// Store in memory cache
+		memoryCache.set(cacheKey, data);
+
+		// Return the data
+		return NextResponse.json(data, {
+			headers: { 'X-Cache': 'MISS' },
+		});
 	} catch (error) {
 		return NextResponse.json(
 			{ error: 'Failed to fetch news' + error },

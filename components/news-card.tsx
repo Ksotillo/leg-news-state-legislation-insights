@@ -1,7 +1,11 @@
+"use client";
+
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
-import { NewsArticle } from '@/lib/types'
+import { NewsArticle, NewsArticleWithCategoryAndReadTime } from '@/lib/types'
 import { newsAuthors } from '@/lib/news-autors'
+import Link from 'next/link';
+import { useArticle } from '@/context/ArticleContext';
 
 interface NewsCardProps extends NewsArticle {
   category: string
@@ -35,9 +39,14 @@ function NewsImage({ urlToImage, title, variant, isHeadline }: Pick<NewsCardProp
   return (
     <div
       className={`
-      ${variant === "vertical" ? "w-full h-48 relative" : `${isHeadline ? "w-1/2 h-80" : "w-80 h-48"} relative shrink-0`}
-      bg-gray-200 rounded-xl overflow-hidden group cursor-pointer
-    `}
+        ${variant === "vertical" 
+          ? "w-full h-48 relative" 
+          : isHeadline 
+            ? "w-full md:w-1/2 h-64 lg:h-80 relative" 
+            : "w-full md:w-80 h-48 relative"
+        }
+        bg-gray-200 rounded-xl overflow-hidden group cursor-pointer
+      `}
     >
       <div
         className="absolute inset-0 -translate-x-full animate-shimmer"
@@ -53,7 +62,7 @@ function NewsImage({ urlToImage, title, variant, isHeadline }: Pick<NewsCardProp
         className="object-cover rounded-xl transition-all duration-300 group-hover:scale-105"
         placeholder="blur"
         blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
-        sizes={variant === "vertical" ? "100vw" : isHeadline ? "50vw" : "20vw"}
+        sizes={variant === "vertical" ? "100vw" : isHeadline ? "100vw" : "(max-width: 768px) 100vw, 20vw"}
       />
     </div>
   );
@@ -65,7 +74,7 @@ function NewsContent({ title, description, source, publishedAt, category, readTi
   const sourceIcon = newsAuthors[source?.id as keyof typeof newsAuthors] || newsAuthors[source.name as keyof typeof newsAuthors] || newsAuthors.generic;
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 mt-4">
       <div className="flex items-center gap-2 mb-2">
         <Image src={sourceIcon} alt={source.name} width={20} height={20} className="rounded-full" />
         <span className="text-sm text-gray-600">
@@ -73,11 +82,13 @@ function NewsContent({ title, description, source, publishedAt, category, readTi
         </span>
       </div>
       <h2 className={`font-aleo font-semibold mb-4 cursor-pointer
-        ${variant === "horizontal" && isHeadline ? "text-5xl" : "text-xl"}
+        ${variant === "horizontal" && isHeadline 
+          ? "text-2xl sm:text-3xl md:text-4xl lg:text-5xl" 
+          : "text-lg sm:text-xl"}
         hover:text-fireOpal transition-colors duration-200`}>
         {title}
       </h2>
-      <p className="text-osloGray font-semibold mb-4">{description}</p>
+      <p className="text-osloGray font-semibold mb-4 text-sm sm:text-base">{description}</p>
       <div className="flex items-center gap-2 text-sm">
         <span className="text-fireOpal font-semibold capitalize">{category}</span>
         <span className="text-lg text-osloGray">·</span>
@@ -92,15 +103,26 @@ export default function NewsCard({
   isHeadline = false,
   ...props
 }: NewsCardProps) {
+  const { setSelectedArticle } = useArticle();
+
+  const handleClick = () => {
+    setSelectedArticle(props as NewsArticleWithCategoryAndReadTime);
+  };
+
   const containerClassName = `${variant === 'vertical'
     ? "flex flex-col gap-4 py-4 border-b border-gray-100"
-    : "flex gap-12 py-4 border-b border-gray-100"} 
+    : "flex flex-col items-center md:flex-row md:gap-6 py-4 border-b border-gray-100"}
     transition-opacity duration-300 ease-in-out opacity-0 animate-fade-in`
 
   return (
-    <article className={containerClassName}>
-      <NewsImage urlToImage={props.urlToImage} title={props.title} variant={variant} isHeadline={isHeadline} />
-      <NewsContent {...props} variant={variant} isHeadline={isHeadline} />
+    <article onClick={handleClick}>
+      <Link 
+        href={`/articles/${encodeURIComponent(props.title)}`}
+        className={containerClassName}
+      >
+        <NewsImage urlToImage={props.urlToImage} title={props.title} variant={variant} isHeadline={isHeadline} />
+        <NewsContent {...props} variant={variant} isHeadline={isHeadline} />
+      </Link>
     </article>
-  )
+  );
 }

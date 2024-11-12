@@ -18,15 +18,15 @@ async function NewsContent({ searchParams }: { searchParams: NewsFilters }) {
     <div key={contentKey} className="animate-fade">
       {/* Headline Section */}
       {headlineArticle && (
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Top Story</h2>
+        <section className="mb-8 md:mb-12">
+          <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Top Story</h2>
           <NewsCard {...headlineArticle} isHeadline />
         </section>
       )}
 
       {/* Rest of the News */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Latest News</h2>
+      <section className="mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Latest News</h2>
         <InfiniteScroll
           searchParams={searchParams}
           initialItems={restArticles}
@@ -40,16 +40,16 @@ export default function Home({ searchParams }: { searchParams: NewsFilters }) {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <Suspense fallback={
           <>
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold mb-4">Top Story</h2>
+            <section className="mb-8 md:mb-12">
+              <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Top Story</h2>
               <NewsCardSkeleton isHeadline />
             </section>
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Latest News</h2>
-              <div className="grid grid-cols-4 gap-6">
+            <section className="mb-6 md:mb-8">
+              <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Latest News</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <NewsCardSkeleton key={i} variant="vertical" />
                 ))}

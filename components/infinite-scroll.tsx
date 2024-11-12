@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { NewsCardSkeleton } from './news-skeleton';
-import { Category, NewsArticleWithCategoryAndReadTime, NewsFilters } from '@/lib/types';
+import { Category, NewsApiResponse, NewsArticleWithCategoryAndReadTime, NewsFilters } from '@/lib/types';
 import { processArticles } from '@/lib/article-utils';
 import NewsCard from './news-card';
+import { fetchWithCache } from '@/lib/fetch-utils';
 
 interface InfiniteScrollProps {
 	searchParams: NewsFilters;
@@ -32,14 +33,12 @@ export default function InfiniteScroll({ searchParams, initialItems }: InfiniteS
 			setIsLoading(true);
 			try {
 				const nextPage = page + 1;
-				const res = await fetch(`/api/news?${new URLSearchParams({
+				const data = await fetchWithCache<NewsApiResponse>(`/api/news?${new URLSearchParams({
 					...searchParams,
 					page: nextPage.toString(),
 					pageSize: '10'
 				})}`);
-				
-				const data = await res.json();
-				
+
 				if (!data.articles || data.articles.length === 0) {
 					setHasMore(false);
 					return;
@@ -61,7 +60,7 @@ export default function InfiniteScroll({ searchParams, initialItems }: InfiniteS
 
 	return (
 		<>
-			<div className="grid grid-cols-4 gap-6">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 				{items.map((article) => (
 					<NewsCard 
 						key={article.url} 
@@ -70,11 +69,11 @@ export default function InfiniteScroll({ searchParams, initialItems }: InfiniteS
 					/>
 				))}
 			</div>
-			
+
 			{hasMore && (
-				<div ref={ref} className="mt-8">
+				<div ref={ref} className="mt-4 md:mt-8">
 					{isLoading && (
-						<div className="grid grid-cols-4 gap-6">
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 							{Array.from({ length: 4 }).map((_, i) => (
 								<NewsCardSkeleton key={i} variant="vertical" />
 							))}
@@ -84,7 +83,7 @@ export default function InfiniteScroll({ searchParams, initialItems }: InfiniteS
 			)}
 
 			{!hasMore && (
-				<div className="text-center text-gray-500 mt-8">
+				<div className="text-center text-gray-500 mt-4 md:mt-8">
 					No more articles to load
 				</div>
 			)}
