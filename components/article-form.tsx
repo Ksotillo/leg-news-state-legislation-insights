@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Article creation form component
+ * Note: Image upload functionality with Supabase was causing issues during implementation,
+ * so it has been temporarily commented out. Will be implemented in a future update.
+ */
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -31,7 +37,7 @@ export default function ArticleForm() {
 		state: '',
 		content: '',
 	});
-	const [image, setImage] = useState<File | null>(null);
+	// const [image, setImage] = useState<File | null>(null);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -62,9 +68,9 @@ export default function ArticleForm() {
 					submitData.append(key, value);
 				}
 			});
-			if (image) {
-				submitData.append('image', image);
-			}
+			// if (image) {
+			// 	submitData.append('image', image);
+			// }
 
 			submitData.append('authorId', user?.id || '');
 

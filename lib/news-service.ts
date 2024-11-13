@@ -49,24 +49,3 @@ export async function fetchArticle(id: string) {
 		throw error;
 	}
 }
-
-export async function addArticle(article: any) {
-	try {
-		const response = await fetch('/api/news', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(article),
-		});
-
-		if (!response.ok) {
-			throw new Error('API request failed');
-		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error adding article:', error);
-		throw error;
-	}
-}
