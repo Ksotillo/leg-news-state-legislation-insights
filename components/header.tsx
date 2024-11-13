@@ -7,7 +7,7 @@ import logo from "@/assets/logo.png";
 import { states } from "@/lib/constants";
 import { SelectWithSearch } from "./ui/select-with-search";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition, useState, useEffect } from "react";
+import { useTransition, useState, useEffect, Suspense } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Settings, SquarePen } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useUser } from "@/hooks/useUser";
 
-export default function Header({ hideFilters = false }: { hideFilters?: boolean }) {
+function HeaderContent({ hideFilters = false }: { hideFilters?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -240,5 +240,37 @@ export default function Header({ hideFilters = false }: { hideFilters?: boolean 
         )}
       </div>
     </header>
+  );
+}
+
+export default function Header({ hideFilters = false }: { hideFilters?: boolean }) {
+  return (
+    <Suspense fallback={
+      <div className="w-full border-b border-gray-100 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
+            <div className="w-32 h-8 bg-gray-200 rounded animate-pulse" />
+            <div className="hidden md:block flex-1 max-w-md mx-8">
+              <div className="h-10 bg-gray-200 rounded-xl animate-pulse" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+            </div>
+          </div>
+          <div className="md:hidden mb-4">
+            <div className="h-10 bg-gray-200 rounded-xl animate-pulse" />
+          </div>
+          {!hideFilters && (
+            <div className="hidden md:block py-4">
+              <div className="h-12 bg-gray-200 rounded animate-pulse" />
+            </div>
+          )}
+        </div>
+      </div>
+    }>
+      <HeaderContent hideFilters={hideFilters} />
+    </Suspense>
   );
 }
