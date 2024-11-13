@@ -19,8 +19,8 @@ export function processArticles(articles: NewsArticle[], category: Category): Ne
 
 			return !isRemoved(article.title) && 
 				!isRemoved(article.description) && 
-				!isRemoved(article.content) &&
-				article.urlToImage !== null;  // Only keep articles with images
+				!isRemoved(article.content)
+				//article.urlToImage !== null;  // Only keep articles with images
 		})
 		// Then add categories to remaining articles
 		.map(article => ({

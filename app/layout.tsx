@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Poppins, Aleo } from "next/font/google";
 import "./globals.css";
 import Providers from "@/context/providers";
+import { Toaster } from "@/components/ui/toaster";
+import UserProfileInitializer from "@/components/user-profile-initializer";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -34,6 +36,8 @@ export default function RootLayout({
       >
         <Providers>
           {children}
+          <UserProfileInitializer />
+          <Toaster />
         </Providers>
       </body>
     </html>

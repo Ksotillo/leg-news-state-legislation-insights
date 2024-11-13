@@ -7,6 +7,7 @@ import { Category, NewsApiResponse, NewsArticleWithCategoryAndReadTime, NewsFilt
 import { processArticles } from '@/lib/article-utils';
 import NewsCard from './news-card';
 import { fetchWithCache } from '@/lib/fetch-utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface InfiniteScrollProps {
 	searchParams: NewsFilters;
@@ -14,6 +15,7 @@ interface InfiniteScrollProps {
 }
 
 export default function InfiniteScroll({ searchParams, initialItems }: InfiniteScrollProps) {
+	const { toast } = useToast();
 	const [items, setItems] = useState(initialItems);
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(true);
@@ -49,6 +51,12 @@ export default function InfiniteScroll({ searchParams, initialItems }: InfiniteS
 				setPage(nextPage);
 			} catch (error) {
 				console.error('Error loading more items:', error);
+
+				toast({
+					variant: "destructive",
+					title: "Error",
+					description: "An error occurred. Please try again later.",
+				});
 				setHasMore(false);
 			} finally {
 				setIsLoading(false);

@@ -16,6 +16,12 @@ export async function fetchNews(filters: NewsFilters): Promise<NewsApiResponse> 
 
 		const response = await fetch(url);
 
+      	if (response.status === 429) {
+            const data = await response.json();
+            const retryAfter = response.headers.get('Retry-After');
+            throw new Error(`Rate limit exceeded. Please try again in ${retryAfter} seconds. ${data.message}`);
+        }
+
 		if (!response.ok) {
 			const errorText = await response.text();
 			console.error('API Error:', errorText);

@@ -7,9 +7,9 @@ import logo from "@/assets/logo.png";
 import { states } from "@/lib/constants";
 import { SelectWithSearch } from "./ui/select-with-search";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Settings, SquarePen } from "lucide-react";
 import Link from "next/link";
 import {
   Accordion,
@@ -19,37 +19,74 @@ import {
 } from "@/components/ui/accordion";
 import { categoryKeywords } from "@/lib/category-inference";
 import FilterOptionMobile from "./ui/filter-option-mobile";
+import { InputSanitizer } from "@/lib/sanitize";
+import { useToast } from "@/hooks/use-toast";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { useUser } from "@/hooks/useUser";
 
 export default function Header({ hideFilters = false }: { hideFilters?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
 
-  // Get initial values from URL
-  const currentState = searchParams.get("state") || states[0].value;
+  // Get initial values from URL or user preferences
+  const currentState = searchParams.get("state") || "";
   const currentSearch = searchParams.get("search") || "";
   const currentTopic = searchParams.get("topic") || "";
 
+  useEffect(() => {
+    // Update the URL with the user's favorite state and category only once
+    if (user && !sessionStorage.getItem('filtersInitialized')) {
+      updateFilters({ state: Object.keys(user.favorite_states)[0], topic: Object.keys(user.favorite_categories)[0] });
+      sessionStorage.setItem('filtersInitialized', 'true');
+    }
+  }, [user]);
+
   const updateFilters = (updates: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams);
+    try {
+        const sanitizedUpdates: Record<string, string> = {};
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (key === 'state' && value === 'all') {
-        params.delete(key);
-      }
-      else if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-    });
+        // Sanitize each update
+        Object.entries(updates).forEach(([key, value]) => {
+          if (key === 'search') {
+            sanitizedUpdates[key] = InputSanitizer.sanitizeSearchQuery(value) || '';
+          } else if (key === 'topic') {
+            sanitizedUpdates[key] = InputSanitizer.sanitizeTopic(value) || '';
+          } else if (key === 'state') {
+            sanitizedUpdates[key] = InputSanitizer.sanitizeState(value) || 'all';
+          }
+        });
 
-    startTransition(() => {
-      setTimeout(() => {
-        router.push(`?${params.toString()}`);
-      }, 100);
-    });
+      const params = new URLSearchParams(searchParams);
+  
+      Object.entries(updates).forEach(([key, value]) => {
+        if (key === 'state' && value === 'all') {
+          params.delete(key);
+        }
+        else if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+  
+      startTransition(() => {
+        setTimeout(() => {
+          router.push(`?${params.toString()}`);
+        }, 100);
+      });
+
+    } catch (error) {
+      console.error('Error updating filters:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred. Please try again later.",
+      });
+    }
   };
 
   const handleStateChange = (value: string) => {
@@ -168,9 +205,21 @@ export default function Header({ hideFilters = false }: { hideFilters?: boolean 
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <button className="p-2">
-              <Image src="/icons/share.svg" alt="Share" width={20} height={20} />
-            </button>
+            <SignedIn>
+              <Link href="/articles/new" className="flex items-center gap-2">
+                <SquarePen className="h-6 w-6 text-gray-500 hover:text-gray-700 transition-colors" />
+                <span className="hidden md:block text-balck opacity-90">Write</span>
+              </Link>
+              <Link href="/settings">
+                <Settings className="h-6 w-6 text-gray-500 hover:text-gray-700 transition-colors" />
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
 
